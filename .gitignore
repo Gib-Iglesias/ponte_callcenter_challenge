@@ -5,6 +5,8 @@
 *._pycache_/
 pycache
 _pycache_
+*._pycache_
+_pycache_
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
