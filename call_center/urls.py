@@ -1,11 +1,7 @@
 from django.urls import path
-from rest_framework.routers import DefaultRouter
-from .viewsets import CallCenterViewSet
+from .views import management_agents_view
 
 
-router = DefaultRouter()
-router.register(r'call-center', CallCenterViewSet)
-
-urlpatterns = []
-
-urlpatterns += router.urls
+urlpatterns = [
+    path(r'management-agents/', management_agents_view, name='management_agents'),
+]
