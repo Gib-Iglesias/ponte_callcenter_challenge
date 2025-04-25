@@ -28,7 +28,8 @@ python manage.py runserver
 python manage.py runserver [run in specific port: 0.0.0.0:8000]
 
 ### To Run Tests:
-python manage.py test
+python manage.py test call_center
+
 
 ## AutoDocumentation with Swagger
 You can check all the APIs created for the project and how to use it

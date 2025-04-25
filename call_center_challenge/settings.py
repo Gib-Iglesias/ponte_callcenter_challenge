@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'docs',
     'rest_framework',
     'rest_framework.authtoken',
-    'call_center'
+    'call_center',
 ]
 
 MIDDLEWARE = [

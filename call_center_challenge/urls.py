@@ -38,5 +38,5 @@ urlpatterns = [
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redocs/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('', include('docs.urls')),
-    path('call-center/', include('call_center.urls')),
+    path('call-center/', include('call_center.urls', namespace='call_center')),
 ]

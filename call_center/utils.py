@@ -4,12 +4,11 @@ from datetime import datetime
 
 def read_tickets_from_csv(csv_filepath):
     """
-    Lee los datos de los tickets desde un CSV con el formato especificado para el input
-
+    Reads ticket data from a CSV file in the format specified for the input
     Args:
-        csv_filepath (str): ruta al archivo CSV
+        csv_filepath (str): Path to the CSV file
     Returns:
-        list: lista de diccionarios, donde cada diccionario representa un ticket
+        list: List of dictionaries, where each dictionary represents a ticket
     """
     tickets = []
     try:
@@ -18,36 +17,35 @@ def read_tickets_from_csv(csv_filepath):
             for row in reader:
                 try:
                     ticket_id = int(row['id'])
-                    fecha_creacion = datetime.strptime(row['fecha_creacion'], '%Y-%m-%d %H:%M')
-                    prioridad = int(row['prioridad'])
+                    creation_date = datetime.strptime(row['fecha_creacion'], '%Y-%m-%d %H:%M')
+                    priority = int(row['prioridad'])
                     tickets.append({
                         'ticket_id': ticket_id,
-                        'fecha_creacion': fecha_creacion,
-                        'prioridad': prioridad
+                        'fecha_creacion': creation_date,
+                        'prioridad': priority
                     })
                 except ValueError as e:
-                    print(f"Error al procesar la fila: {row}. Error: {e}")
+                    print(f"Error processing row: {row}. Error: {e}")
                 except KeyError as e:
-                    print(f"Error: Falta la columna '{e}' en el archivo CSV.")
+                    print(f"Error: Missing column '{e}' in CSV file")
     except FileNotFoundError:
-        print(f"Error: El archivo {csv_filepath} no fue encontrado.")
+        print(f"Error: File {csv_filepath} not found")
     return tickets
 
 
-def assign_ticket_by_priority(tickets, num_agents):
+def assign_ticket_by_priority(tickets, number_agents):
     """
-    Distribuye los tickets entre los agentes basándose en la prioridad
-
+    Distributes tickets among agents based on priority
     Args:
-        tickets (list): lista de diccionarios de tickets (ordenados por prioridad).
-        num_agents (int): número de agentes disponibles.
+        tickets (list): List of ticket dictionaries (sorted by priority)
+        num_agents (int): Number of available agents
     Returns:
-        dict: diccionario donde las claves son los IDs de los agentes y los valores son listas de tickets asignados.
+        dict: Dictionary where the keys are the agent IDs and the values ​​are lists of assigned tickets
     """
-    assignment = {i + 1: [] for i in range(num_agents)}
+    assignment = {i + 1: [] for i in range(number_agents)}
     agent_index = 0
     for ticket in tickets:
-        agent_id = (agent_index % num_agents) + 1
+        agent_id = (agent_index % number_agents) + 1
         assignment[agent_id].append(ticket)
         agent_index += 1
     return assignment

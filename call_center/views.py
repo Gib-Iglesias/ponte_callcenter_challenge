@@ -1,3 +1,5 @@
+import os
+import sys
 import csv
 import time
 import random
@@ -10,9 +12,8 @@ from rest_framework.decorators import api_view
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 
-# Lock para asegurar la escritura segura en el archivo de resultados
+# Lock to ensure safe writing to the results file and avoid race conditions
 results_lock = Lock()
-
 
 class Agent(Thread):
     def __init__(self, agent_id, ticket_queue, results_file):
@@ -26,7 +27,7 @@ class Agent(Thread):
             try:
                 ticket = self.ticket_queue.pop(0)
                 assignment_time = datetime.now()
-                # Manejo del tiempo de atención
+                # Attention Time Management
                 processing_time = random.uniform(2, 3)
                 time.sleep(processing_time)
                 completion_time = datetime.now()
@@ -42,34 +43,44 @@ class Agent(Thread):
                         completion_time.strftime('%H:%M:%S')
                     ])
 
-                print(f"Agente {self.agent_id} atendió el ticket {ticket['ticket_id']}")
+                print(f"Agent_Id: {self.agent_id} attended the Ticket_Id: {ticket['ticket_id']}")
             except IndexError:
-                # No más tickets en la cola
+                # Ends when there are no more tickets in the queue
                 break
 
 
 @extend_schema(parameters=[
-    OpenApiParameter(name='numero_de_agentes', type=int, location='query', description='Número de agentes disponibles para gestionar tickets'),
+    OpenApiParameter(name='number_of_agents', type=int, location='query', description='Number of agents available to manage tickets'),
 ])
 @api_view(['GET'])
 def management_agents_view(request):
-    num_agents_str = request.GET.get('numero_de_agentes')
+    num_agents_str = request.GET.get('number_of_agents')
     if not num_agents_str or not num_agents_str.isdigit():
-        return Response({'error': 'El parámetro "numero_de_agentes" es requerido y debe ser un número entero.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'The "number_of_agents" parameter is required and must be an integer'}, status=status.HTTP_400_BAD_REQUEST)
     num_agents = int(num_agents_str)
 
-    try:
-        tickets = read_tickets_from_csv('data/tickets_dataset.csv')
-        if not tickets:
-            return Response({'message': 'No se encontraron tickets a procesar'}, status=status.HTTP_200_OK)
+    # Determines the results directory based on whether we are in a test environment or not
+    is_testing = any('test' in arg for arg in sys.argv)
+    results_dir = 'results_tests' if is_testing else 'results'
+    data_file = 'data_tests/tickets_test.csv' if is_testing else 'data/tickets_dataset.csv'
+    print('Iteration Test')
 
-        # Ordenar los tickets por prioridad
+    try:
+        tickets = read_tickets_from_csv(data_file)
+        if not tickets:
+            return Response({'message': 'No tickets were found to process'}, status=status.HTTP_200_OK)
+
+        # Sort tickets by priority
         sorted_tickets = sorted(tickets, key=lambda x: x['prioridad'], reverse=True)
-        # Crear una cola de tickets
+        # Create a ticket queue
         ticket_queue = list(sorted_tickets)
+        # Generate a single file for the results
+        now = datetime.now().strftime("%Y%m%d_%H%M")
+        results_filename = f'agents_results_num_{num_agents}_{now}.csv'
+        results_filepath = os.path.join(results_dir, results_filename)
 
         agents = []
-        with open('results/agents_results.csv', 'w', newline='') as results_csvfile:
+        with open(results_filepath, 'w', newline='') as results_csvfile:
             writer = csv.writer(results_csvfile)
             writer.writerow(['id', 'fecha_creacion', 'prioridad', 'agente', 'fecha_asignacion', 'fecha_resolucion'])
 
@@ -81,9 +92,9 @@ def management_agents_view(request):
             for agent in agents:
                 agent.join()
 
-        return Response({'message': f'Gestión completada con {num_agents} agentes. Resultados guardados en agents_results.csv'}, status=status.HTTP_200_OK)
+        return Response({'message': f'Management completed with {num_agents} agents. Results saved in {os.path.join(results_dir, results_filename)}'}, status=status.HTTP_201_CREATED)
 
     except FileNotFoundError:
-        return Response({'error': 'El archivo tickets_dataset.csv no fue encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': f'File: {data_file} not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
-        return Response({'error': f'Ocurrió un error durante la gestión de tickets: {e}, Consulte a un asesor'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': f'An error occurred during ticket management: {e}. Consult an advisor'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
