@@ -12,7 +12,6 @@ from rest_framework.decorators import api_view
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 
-# Lock to ensure safe writing to the results file and avoid race conditions
 results_lock = Lock()
 
 class Agent(Thread):
@@ -27,7 +26,7 @@ class Agent(Thread):
             try:
                 ticket = self.ticket_queue.pop(0)
                 assignment_time = datetime.now()
-                # Attention Time Management
+
                 processing_time = random.uniform(2, 3)
                 time.sleep(processing_time)
                 completion_time = datetime.now()
@@ -45,7 +44,6 @@ class Agent(Thread):
 
                 print(f"Agent_Id: {self.agent_id} attended the Ticket_Id: {ticket['ticket_id']}")
             except IndexError:
-                # Ends when there are no more tickets in the queue
                 break
 
 
@@ -59,7 +57,6 @@ def management_agents_view(request):
         return Response({'error': 'The "number_of_agents" parameter is required and must be an integer'}, status=status.HTTP_400_BAD_REQUEST)
     num_agents = int(num_agents_str)
 
-    # Determines the results directory based on whether we are in a test environment or not
     is_testing = any('test' in arg for arg in sys.argv)
     results_dir = 'results_tests' if is_testing else 'results'
     data_file = 'data_tests/tickets_test.csv' if is_testing else 'data/tickets_dataset.csv'
@@ -70,11 +67,10 @@ def management_agents_view(request):
         if not tickets:
             return Response({'message': 'No tickets were found to process'}, status=status.HTTP_200_OK)
 
-        # Sort tickets by priority
         sorted_tickets = sorted(tickets, key=lambda x: x['prioridad'], reverse=True)
-        # Create a ticket queue
+
         ticket_queue = list(sorted_tickets)
-        # Generate a single file for the results
+
         now = datetime.now().strftime("%Y%m%d_%H%M")
         results_filename = f'agents_results_num_{num_agents}_{now}.csv'
         results_filepath = os.path.join(results_dir, results_filename)

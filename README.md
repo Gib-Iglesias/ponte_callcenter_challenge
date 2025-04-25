@@ -1,3 +1,10 @@
+# Why this Project was Created? #
+
+"""
+This repository is the solution created for a code test with the following statement:
+"You are leading the development of a call center simulation system that will efficiently manage the handling of a given number of tickets. The system must assign tickets to N agents in parallel and record both the time the ticket is assigned and the time it is completed in a CSV file."
+"""
+
 # How to Run this Project #
 ## Python (Framework Django) ##
 
@@ -13,10 +20,12 @@ source venv/bin/activate (Mac / Linux)
 deactivate (Inside venv)
 
 ### Install Requirements:
-pip install -r requirements.txt (pip3 en Mac / Linux)
+pip install -r requirements.txt (Windows)
+pip3 install -r requirements.txt (Mac / Linux)
 
 ### Check List of Requirements Installed (Only IF needed):
-pip freeze req.txt (pip3 en Mac / Linux)
+pip freeze req.txt (Windows)
+pip3 freeze req.txt (Mac / Linux)
 
 ### Apply Migrations
 python manage.py makemigrations
@@ -32,5 +41,5 @@ python manage.py test call_center
 
 
 ## AutoDocumentation with Swagger
-You can check all the APIs created for the project and how to use it
+You can check all the APIs created for the project and how to use it in
 URLs: 'http://127.0.0.1:8000/api/schema/swagger-ui/' or 'http://localhost:8000/api/schema/swagger-ui/'

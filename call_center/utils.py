@@ -3,13 +3,6 @@ from datetime import datetime
 
 
 def read_tickets_from_csv(csv_filepath):
-    """
-    Reads ticket data from a CSV file in the format specified for the input
-    Args:
-        csv_filepath (str): Path to the CSV file
-    Returns:
-        list: List of dictionaries, where each dictionary represents a ticket
-    """
     tickets = []
     try:
         with open(csv_filepath, 'r') as csvfile:
@@ -34,14 +27,6 @@ def read_tickets_from_csv(csv_filepath):
 
 
 def assign_ticket_by_priority(tickets, number_agents):
-    """
-    Distributes tickets among agents based on priority
-    Args:
-        tickets (list): List of ticket dictionaries (sorted by priority)
-        num_agents (int): Number of available agents
-    Returns:
-        dict: Dictionary where the keys are the agent IDs and the values ​​are lists of assigned tickets
-    """
     assignment = {i + 1: [] for i in range(number_agents)}
     agent_index = 0
     for ticket in tickets:

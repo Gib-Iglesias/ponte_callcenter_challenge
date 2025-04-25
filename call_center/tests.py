@@ -15,12 +15,10 @@ class ManagementAgentsAPITest(TestCase):
         self.test_data_dir = 'data_tests'
         self.test_results_dir = 'results_tests'
 
-        # First we make sure the test results directory is clean
         if os.path.exists(self.test_results_dir):
             shutil.rmtree(self.test_results_dir)
         os.makedirs(self.test_results_dir, exist_ok=True)
 
-        # Then we create a test ticket file in the tests directory
         os.makedirs(self.test_data_dir, exist_ok=True)
         with open(os.path.join(self.test_data_dir, 'tickets_test.csv'), 'w', newline='') as f:
             f.write("id,fecha_creacion,prioridad\n")
@@ -40,25 +38,20 @@ class ManagementAgentsAPITest(TestCase):
             f.write("14,2024-01-09 07:45,5\n")
             f.write("15,2024-01-10 10:00,5\n")
 
-        # Patch the original function to use the test data
         self.read_tickets_patch = patch('call_center.views.read_tickets_from_csv', self.mock_read_tickets_from_csv)
         self.read_tickets_mock = self.read_tickets_patch.start()
 
 
     def tearDown(self):
-        # Clean up the test results directory
         if os.path.exists(self.test_results_dir):
             shutil.rmtree(self.test_results_dir)
-        # Clean up the test data directory
+
         if os.path.exists(self.test_data_dir):
             shutil.rmtree(self.test_data_dir)
         self.read_tickets_patch.stop()
 
 
     def mock_read_tickets_from_csv(self, csv_filepath):
-        """
-        Mock to simulate reading the test ticket file
-        """
         tickets_test = []
         with open(os.path.join(self.test_data_dir, 'tickets_test.csv'), 'r') as f:
             reader = csv.DictReader(f)
@@ -74,24 +67,20 @@ class ManagementAgentsAPITest(TestCase):
     def test_management_agents_endpoint_invalid_agent_number(self):
         url = reverse('call_center:management_agents')
 
-        # Running the API using a string
         response = self.client.get(url, {'number_of_agents': 'abc'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.json())
 
-        # Running the API with a negative number
         response = self.client.get(url, {'number_of_agents': -1})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.json())
 
-        # Running the API without the param
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.json())
 
 
     def test_management_agents_endpoint_no_tickets(self):
-        # Patch the original function to return an empty list
         with patch('call_center.views.read_tickets_from_csv', return_value=[]) as mock_read:
             url = reverse('call_center:management_agents')
             response = self.client.get(url, {'number_of_agents': 10})
@@ -102,7 +91,6 @@ class ManagementAgentsAPITest(TestCase):
 
 
     def test_management_agents_endpoint_multiple_agents(self):
-        # Test with random agent numbers
         agent_numbers = [6, 8]
         for num_agents in agent_numbers:
             url = reverse('call_center:management_agents')
@@ -112,14 +100,12 @@ class ManagementAgentsAPITest(TestCase):
             self.assertIn('message', response.json())
             self.assertIn(str(num_agents), response.json()['message'])
 
-            # Verify that a results file was created in the tests directory
             results_files = [
                 f for f in os.listdir(self.test_results_dir)
                 if f.startswith('agents_results_num_') and f'_{num_agents}_' in f and f.endswith('.csv')
             ]
             self.assertEqual(len(results_files), 1, f"The expected result file was not found for {num_agents} agents")
 
-            # And verify its content
             filepath = os.path.join(self.test_results_dir, results_files[0])
             with open(filepath, 'r') as f:
                 lines = f.readlines()
