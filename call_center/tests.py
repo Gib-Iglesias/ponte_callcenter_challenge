@@ -91,7 +91,7 @@ class ManagementAgentsAPITest(TestCase):
 
 
     def test_management_agents_endpoint_multiple_agents(self):
-        agent_numbers = [6, 8]
+        agent_numbers = [6, 8, 10]
         for num_agents in agent_numbers:
             url = reverse('call_center:management_agents')
             response = self.client.get(url, {'number_of_agents': num_agents})
